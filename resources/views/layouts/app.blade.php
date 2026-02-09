@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
-
+        <title>{{\App\Models\Setting::first()?->company_name ?? '' }}</title>
+        <link rel="icon" href="{{ asset('storage/'.\App\Models\Setting::first()?->logo_path) }}">
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=Cairo:400,500,600,700,900&display=swap" rel="stylesheet" />
@@ -23,6 +23,35 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
             body { font-family: 'Cairo', sans-serif; }
+            
+            /* Sidebar transitions */
+            #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease; }
+            .sidebar-collapsed .sidebar-text,
+            .sidebar-collapsed .sidebar-section-title,
+            .sidebar-collapsed .sidebar-description {
+                display: none;
+            }
+            .sidebar-collapsed .sidebar-link {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .sidebar-collapsed .sidebar-link svg {
+                margin: 0;
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+            .sidebar-collapsed #brand-text {
+                display: none;
+            }
+            .sidebar-collapsed #user-info {
+                display: none;
+            }
+            .sidebar-collapsed #brand-header {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
         </style>
     </head>
     <body class="font-sans antialiased text-slate-900 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-300 rtl">
@@ -40,9 +69,23 @@
                         <button id="sidebar-toggle" class="p-2 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
                         </button>
-                        <h1 class="text-xl font-black text-slate-800 dark:text-white truncate max-w-xs">
-                            {{ \App\Models\Setting::first()?->company_name ?? 'Alarabia group ' }}
-                        </h1>
+                        
+                        @php
+                            $settings = \App\Models\Setting::first();
+                        @endphp
+                        
+                        <div class="flex items-center gap-3">
+                            @if($settings?->logo_path)
+                                <img src="{{ asset('storage/'.$settings->logo_path) }}" alt="Logo" class="h-8 w-auto object-contain">
+                            @else
+                                <div class="p-2 bg-indigo-600 rounded-lg">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                </div>
+                            @endif
+                            <h1 class="text-xl font-black text-slate-800 dark:text-white truncate max-w-xs">
+                                {{ $settings?->company_name ?? 'Alarabia group ' }}
+                            </h1>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-6">
@@ -90,10 +133,24 @@
         <script>
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('sidebar-toggle');
+            
+            // Check storage for sidebar state
+            if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                sidebar.classList.add('sidebar-collapsed');
+                sidebar.classList.replace('w-72', 'w-20');
+            }
+
             toggle.addEventListener('click', () => {
-                sidebar.classList.toggle('w-72');
-                sidebar.classList.toggle('w-0');
-                sidebar.classList.toggle('opacity-0');
+                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                if (isCollapsed) {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    sidebar.classList.replace('w-20', 'w-72');
+                    localStorage.setItem('sidebar-collapsed', 'false');
+                } else {
+                    sidebar.classList.add('sidebar-collapsed');
+                    sidebar.classList.replace('w-72', 'w-20');
+                    localStorage.setItem('sidebar-collapsed', 'true');
+                }
             });
 
             // Theme Toggle Logic

@@ -31,10 +31,23 @@ class SettingController extends Controller
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $setting = Setting::first();
-        $setting->update($request->only('company_name', 'activity', 'address', 'phone', 'description'));
+        $data = $request->only('company_name', 'activity', 'address', 'phone', 'description');
+
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($setting->logo_path && \Storage::disk('public')->exists($setting->logo_path)) {
+                \Storage::disk('public')->delete($setting->logo_path);
+            }
+            
+            $path = $request->file('logo')->store('logos', 'public');
+            $data['logo_path'] = $path;
+        }
+
+        $setting->update($data);
 
         return redirect()->route('settings.edit')->with('status', 'settings-updated');
     }
