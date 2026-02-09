@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply font-sans antialiased;
+        direction: rtl;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl transition-all duration-300 hover:border-indigo-500/30;
+    }
+
+    .sidebar-link {
+        @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 font-medium text-sm transition-all duration-200 hover:bg-slate-700/50 hover:text-white;
+    }
+
+    .sidebar-link-active {
+        @apply bg-slate-700/70 text-white font-bold;
+    }
+
+    .sidebar-section-title {
+        @apply px-4 py-2 text-[10px] font-black text-slate-500 uppercase tracking-widest;
+    }
+
+    .vibrant-gradient {
+        @apply bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600;
+    }
+
+    .form-card {
+        @apply bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-lg;
+    }
+
+    .table-row {
+        @apply border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors;
+    }
+
+    .table-header {
+        @apply bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700;
+    }
+}
+
+/* Custom Scrollbar - Light Mode */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-slate-950;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600;
+}
