@@ -20,10 +20,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username', // Added for dual login
+        'username',
         'email',
         'password',
-        'salesman_name', // Maps to SQL Server SalesMan column
+        'salesman_name',
+        'supervisor_id',
     ];
 
     /**

@@ -18,7 +18,7 @@ class SalesmanManagementController extends Controller
     {
         try {
             $users = User::all();
-            $managers = User::role(['Admin', 'Manager'])->get();
+            $managers = User::role(['Admin', 'Manager', 'General Manager', 'Area Manager'])->get();
             
             // Get all unique salesman names from SQL Server (cached)
             $salesmen = Cache::remember('sql_salesmen_list', 3600, function() {
