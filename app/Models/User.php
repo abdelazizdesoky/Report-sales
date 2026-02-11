@@ -58,17 +58,44 @@ class User extends Authenticatable
     }
 
     /**
+     * The supervisor of this user.
+     */
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    /**
+     * The subordinates (managers) under this user.
+     */
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
+    /**
      * Get list of salesman names this user is allowed to see.
      * Includes their own salesman name and all names they manage.
      */
     public function getManagedSalesmenNames(): array
     {
-        // Admin sees all, handled by skipping the filter in ReportService
-        if ($this->hasRole('Admin')) {
+        // Admin and General Manager see all, handled by skipping the filter in ReportService
+        if ($this->hasRole('Admin') || $this->hasRole('General Manager')) {
             return [];
         }
 
-        $names = $this->managedSalesmen()->whereNotNull('salesman_name')->pluck('salesman_name')->toArray();
+        $names = [];
+
+        // If Area Manager, get names from all subordinates recursively
+        if ($this->hasRole('Area Manager')) {
+            foreach ($this->subordinates as $subordinate) {
+                $names = array_merge($names, $subordinate->getManagedSalesmenNames());
+            }
+        }
+
+        // Add names managed directly by this user
+        $managedDirectly = $this->managedSalesmen()->whereNotNull('salesman_name')->pluck('salesman_name')->toArray();
+        $names = array_merge($names, $managedDirectly);
 
         // If the user is also a salesman, include themselves
         if (!empty($this->salesman_name)) {

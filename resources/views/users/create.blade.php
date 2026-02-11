@@ -26,9 +26,16 @@
 
                     <!-- Email -->
                     <div>
-                        <x-input-label for="email" value=" البريد الإلكتروني او يوزر  " />
+                        <x-input-label for="email" value=" البريد الإلكتروني" />
                         <x-text-input id="email" name="email" type="text" class="mt-1" :value="old('email')" required />
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
+
+                    <!-- Username -->
+                    <div>
+                        <x-input-label for="username" value="اسم المستخدم (Username)" />
+                        <x-text-input id="username" name="username" type="text" class="mt-1" :value="old('username')" placeholder="مثال: ahmed_123" />
+                        <x-input-error :messages="$errors->get('username')" class="mt-2" />
                     </div>
 
                     <!-- Role -->
@@ -48,6 +55,20 @@
                         <x-text-input id="salesman_name" name="salesman_name" type="text" class="mt-1" :value="old('salesman_name')" placeholder="مثال: احمد محمد علي" />
                         <p class="text-xs text-slate-500 mt-1">اتركه فارغاً إذا كان المستخدم مشرفاً أو يرى كل البيانات.</p>
                         <x-input-error :messages="$errors->get('salesman_name')" class="mt-2" />
+                    </div>
+
+                    <!-- Supervisor -->
+                    <div>
+                        <x-input-label for="supervisor_id" value="المشرف (مدير المنطقة أو المدير المباشر)" />
+                        <select id="supervisor_id" name="supervisor_id" class="mt-1 w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/30 transition-all duration-200 shadow-sm">
+                            <option value="">-- بدون مشرف --</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}" {{ old('supervisor_id') == $u->id ? 'selected' : '' }}>
+                                    {{ $u->name }} ({{ $u->roles->pluck('name')->first() }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('supervisor_id')" class="mt-2" />
                     </div>
 
                     <!-- Password -->

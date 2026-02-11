@@ -23,7 +23,8 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
-        return view('users.create', compact('roles'));
+        $users = User::all();
+        return view('users.create', compact('roles', 'users'));
     }
 
     public function store(Request $request)
@@ -34,13 +35,17 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
             'salesman_name' => ['nullable', 'string', 'max:100'],
+            'username' => ['nullable', 'string', 'max:50', 'unique:users,username'],
+            'supervisor_id' => ['nullable', 'exists:users,id'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'username' => $request->username,
             'password' => Hash::make($request->password),
             'salesman_name' => $request->salesman_name,
+            'supervisor_id' => $request->supervisor_id,
         ]);
 
         $user->assignRole($request->role);
@@ -51,7 +56,8 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        $users = User::where('id', '!=', $user->id)->get(); // Prevent self-supervision
+        return view('users.edit', compact('user', 'roles', 'users'));
     }
 
     public function update(Request $request, User $user)
@@ -59,11 +65,13 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'max:255', 'unique:users,email,'.$user->id],
+            'username' => ['nullable', 'string', 'max:50', 'unique:users,username,'.$user->id],
             'role' => ['required', 'exists:roles,name'],
             'salesman_name' => ['nullable', 'string', 'max:100'],
+            'supervisor_id' => ['nullable', 'exists:users,id'],
         ]);
 
-        $user->update($request->only('name', 'email', 'salesman_name'));
+        $user->update($request->only('name', 'email', 'username', 'salesman_name', 'supervisor_id'));
 
         if ($request->filled('password')) {
             $request->validate([

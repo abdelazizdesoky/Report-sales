@@ -41,6 +41,12 @@ class RolesAndPermissionsSeeder extends Seeder
         $manager = Role::firstOrCreate(['name' => 'Manager', 'guard_name' => 'web']);
         $manager->syncPermissions(['view users', 'edit users', 'view settings', 'view reports']);
 
+        $generalManager = Role::firstOrCreate(['name' => 'General Manager', 'guard_name' => 'web']);
+        $generalManager->syncPermissions(['view users', 'view reports']);
+
+        $areaManager = Role::firstOrCreate(['name' => 'Area Manager', 'guard_name' => 'web']);
+        $areaManager->syncPermissions(['view users', 'view reports']);
+
         $supervisor = Role::firstOrCreate(['name' => 'Supervisor', 'guard_name' => 'web']);
         $supervisor->syncPermissions(['view users', 'view reports']);
 

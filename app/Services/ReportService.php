@@ -42,7 +42,7 @@ class ReportService
 
         // Security: Restrict based on user role and hierarchy
         $user = auth()->user();
-        if ($user && !$user->hasRole('Admin')) {
+        if ($user && !$user->hasRole('Admin') && !$user->hasRole('General Manager')) {
             $managedNames = $user->getManagedSalesmenNames();
             
             if (!empty($managedNames)) {
