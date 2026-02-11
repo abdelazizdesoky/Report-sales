@@ -97,7 +97,9 @@
                                 </tr>
                             @endforelse
                         </tbody>
-                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+                    {{ $assignments->links() }}
                 </div>
             </div>
         </div>

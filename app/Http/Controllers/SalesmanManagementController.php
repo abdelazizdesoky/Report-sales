@@ -32,7 +32,7 @@ class SalesmanManagementController extends Controller
                     ->pluck('SalesMan');
             });
 
-            $assignments = ManagerSalesman::with('manager')->get();
+            $assignments = ManagerSalesman::with('manager')->paginate(10);
 
             return view('admin.salesmen_sync.index', compact('users', 'managers', 'salesmen', 'assignments'));
         } catch (\Illuminate\Database\QueryException $e) {

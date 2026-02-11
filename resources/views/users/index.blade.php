@@ -65,6 +65,9 @@
                     </tbody>
                 </table>
             </div>
+            <div class="px-6 py-4 border-t border-slate-100 dark:divide-slate-800/50">
+                {{ $users->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>
