@@ -1,76 +1,105 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# نظام تقارير المبيعات (Report Sales System)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+نظام متقدم لإدارة وعرض تقارير المبيعات المرتبطة بقاعدة بيانات SQL Server، مع نظام صلاحيات هرمي متطور ودعم كامل للغة العربية والوضع الداكن.
 
-## SQL Server Reporting & Aging Report
-This system connects to an external Microsoft SQL Server to generate financial reports.
+## 🚀 المميزات الرئيسية
 
-### Features
-- **Aging Report:** Tracks customer debts and aging buckets (1-30, 31-60, 61-180, +180 days).
-- **Data Security:** Users can be linked to specific salesman names to restrict data access.
-- **Top 10 Debtors:** Insight section showing top debtors.
-- **Export:** Export to Excel (CSV) and Print/PDF support.
-- **Smart Filters:** Searchable dropdowns for Region, Salesman, and Classification.
+*   **نظام صلاحيات هرمي**:
+    *   **مدير عام (General Manager)**: إمكانية الوصول لجميع تقارير النظام.
+    *   **مدير (Manager)**: رؤية بيانات مديري المناطق والمناديب التابعين له.
+    *   **مدير منطقة (Area Manager)**: رؤية بيانات المناديب المربوطين به.
+*   **تسجيل دخول مرن**: إمكانية الدخول باستخدام البريد الإلكتروني أو اسم المستخدم (Username).
+*   **لوحة تحكم احترافية**: واجهة مستخدم عصرية تدعم الوضع الداكن (Dark Mode).
+*   **إدارة المندوبين**: واجهة لربط مستخدمي النظام بأسماء المندوبين المسجلة في SQL Server.
+*   **تقارير تفاعلية**: عرض التقارير مع فلاتر ذكية وتقسيم الصفحات (Pagination) لتحسين الأداء.
+*   **صفحات خطأ مخصصة**: تصميم احترافي لصفحات الأخطاء (404, 403, 500) مع سهولة العودة للرئيسية.
 
-### Configuration
-1. **Database Connection:** Configure `DB_SECONDARY_*` in `.env`.
-2. **User-Salesman Mapping:** 
-   - Edit a user.
-   - Enter the exact "Salesman Name" in the provided field.
-   - If left empty, the user can see all data (Admin/Supervisor mode).
+## 🛠 المتطلبات التقنية
 
-## About Laravel
+*   PHP 8.2+
+*   Composer
+*   Node.js & NPM
+*   SQL Server (لقاعدة بيانات التقارير)
+*   MySQL أو PostgreSQL (لقاعدة بيانات النظام الأساسية)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 💻 خطوات التثبيت
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1.  **تحميل المشروع**:
+    ```bash
+    git clone [repository-url]
+    cd Report-sales
+    ```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2.  **تثبيت للمكتبات البرمجية**:
+    ```bash
+    composer install
+    npm install
+    npm run build
+    ```
 
-## Learning Laravel
+3.  **إعداد ملف البيئة**:
+    *   قم بنسخ `.env.example` إلى `.env`.
+    *   قم بضبط إعدادات قواعد البيانات (MySQL لسيرفر التطبيق، و SQLServer للتقارير).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+4.  **توليد مفتاح التطبيق**:
+    ```bash
+    php artisan key:generate
+    ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+5.  **تشغيل التهجيرات (Migrations) والبيانات الأولية (Seeders)**:
+    ```bash
+    php artisan migrate
+    php artisan db:seed --class=RolesAndPermissionsSeeder
+    php artisan db:seed --class=UserSeeder
+    ```
 
-## Laravel Sponsors
+## 🔐 نظام الصلاحيات والتسلسل الهرمي
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+لتفعيل التسلسل الهرمي بشكل صحيح:
+1.  قم بإنشاء المستخدمين وتعيين الأدوار (General Manager, Manager, Area Manager).
+2.  استخدم حقل **"المشرف" (Supervisor)** لربط المدير بمديري المناطق التابعين له.
+3.  توجه إلى صفحة **"ربط المندوبين"** لربط مدير المنطقة بأسماء المندوبين القادمة من نظام الـ SQL Server.
 
-### Premium Partners
+## � دليل إدارة النظام (Admin Guide)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+هذا الدليل يوضح الخطوات التفصيلية لإدارة النظام من البداية وحتى عرض التقارير.
 
-## Contributing
+### 1. إدارة الرتب والصلاحيات (Roles)
+النظام يعتمد على رتب محددة مسبقاً، كل رتبة لها صلاحية رؤية معينة:
+*   **Admin**: له صلاحية كاملة على كل شيء.
+*   **General Manager**: يرى تقارير جميع المناديب في الشركة.
+*   **Manager**: يرى بيانات المناديب التابعين له مباشرة، بالإضافة لبيانات مرؤوسيه (Area Managers).
+*   **Area Manager**: يرى بيانات المناديب المربوطين باسمه فقط.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+### 2. إضافة مستخدم جديد (Users)
+عند إضافة مستخدم جديد من شاشة **"إدارة المستخدمين"**:
+1.  **البيانات الأساسية**: أدخل الاسم، البريد الإلكتروني، واسم المستخدم (الذي سيمكنه من الدخول به).
+2.  **اختيار الرتبة (Role)**: اختر الرتبة المناسبة بناءً على الوصف أعلاه.
+3.  **تحديد المشرف (Supervisor)**:
+    *   إذا كان المستخدم **مدير منطقة (Area Manager)**، يجب اختيار **المدير (Manager)** التابع له من القائمة.
+    *   هذه الخطوة ضرورية ليتمكن المدير من رؤية بيانات هذا الموظف.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+### 3. ربط المندوبين (Linking Salesmen)
+الأسماء القادمة من SQL Server هي أسماء مناديب (مثل: مندوب 1، مندوب 2). لربطهم بمستخدمين في النظام:
+1.  توجه إلى صفحة **"ربط المندوبين"**.
+2.  في خانة **"المدير"**: اختر المستخدم (سواء كان مدير عام، مدير، أو مدير منطقة).
+3.  في خانة **"المندوب"**: اختر الاسم كما هو مسجل في SQL Server.
+4.  اضغط **"إضافة ربط جديد"**.
+*الآن، أي تقرير يحتوي على هذا المندوب سيظهر لهذا المستخدم ولمشرفينه في المستويات الأعلى.*
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### 4. عرض وتحليل التقارير
+بمجرد تسجيل الدخول، يقوم النظام آلياً بفلترة البيانات:
+*   المستخدم يرى فقط ما "يملكه" أو ما هو "مفوض" له.
+*   يمكن استخدام فلاتر التاريخ والعملاء لتصفية النتائج.
+*   جميع الجداول تدعم خاصية "تقسيم الصفحات" (Pagination) لسهولة التصفح.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## �📄 الترخيص
+هذا المشروع مخصص للاستخدام الداخلي.
