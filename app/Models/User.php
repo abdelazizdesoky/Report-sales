@@ -86,14 +86,14 @@ class User extends Authenticatable
 
         $names = [];
 
-        // If Area Manager, get names from all subordinates recursively
-        if ($this->hasRole('Area Manager')) {
+        // If Manager or Area Manager, get names from all subordinates recursively
+        if ($this->hasRole('Manager') || $this->hasRole('Area Manager')) {
             foreach ($this->subordinates as $subordinate) {
                 $names = array_merge($names, $subordinate->getManagedSalesmenNames());
             }
         }
 
-        // Add names managed directly by this user
+        // Add names managed directly by this user (mapping in manager_salesman table)
         $managedDirectly = $this->managedSalesmen()->whereNotNull('salesman_name')->pluck('salesman_name')->toArray();
         $names = array_merge($names, $managedDirectly);
 
