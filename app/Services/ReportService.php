@@ -38,7 +38,8 @@ class ReportService
      */
     private function getBaseQuery(Report $report, array $filters = [])
     {
-        $query = DB::connection('sqlsrv')->table($report->source_name);
+        $query = DB::connection('sqlsrv')->table($report->source_name)
+            ->select('*', 'Region_Parent as Region_Display');
 
         // Security: Restrict based on user role and hierarchy
         $user = auth()->user();
@@ -76,7 +77,7 @@ class ReportService
         }
 
         if (!empty($filters['region'])) {
-            $query->where('Region_name', $filters['region']);
+            $query->where('Region_Parent', $filters['region']);
         }
 
         if (!empty($filters['status'])) {
@@ -128,13 +129,13 @@ class ReportService
     }
 
     /**
-     * Get Top 10 Debtors.
+     * Get Top Debtors.
      */
-    public function getTopDebtors(Report $report, array $filters = [])
+    public function getTopDebtors(Report $report, array $filters = [], int $limit = 10)
     {
         return $this->getBaseQuery($report, $filters)
             ->orderBy('اجمالي_مديونية_العميل', 'desc')
-            ->limit(10)
+            ->limit($limit)
             ->get();
     }
 
@@ -145,17 +146,17 @@ class ReportService
     {
         // Summary by Region
         $byRegion = $this->getBaseQuery($report, $filters)
-            ->select('Region_name', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
-            ->whereNotNull('Region_name')
-            ->groupBy('Region_name')
+            ->select('Region_Parent as Region_Display', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
+            ->whereNotNull('Region_Parent')
+            ->groupBy('Region_Parent')
             ->orderBy('total_debt', 'desc')
             ->get();
 
         // Summary by Salesman
         $bySalesman = $this->getBaseQuery($report, $filters)
-            ->select('SalesMan', 'Region_name', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
+            ->select('SalesMan', 'Region_Parent as Region_Display', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
             ->whereNotNull('SalesMan')
-            ->groupBy('SalesMan', 'Region_name')
+            ->groupBy('SalesMan', 'Region_Parent')
             ->orderBy('total_debt', 'desc')
             ->get();
 
@@ -168,7 +169,7 @@ class ReportService
     /**
      * Get Top 10 Salesmen by Total Debt.
      */
-    public function getTopSalesmen(Report $report, array $filters = [])
+    public function getTopSalesmen(Report $report, array $filters = [], int $limit = 10)
     {
         // Clone the base query to avoid modifying the original if passed by reference (though here it returns new builder)
         $query = $this->getBaseQuery($report, $filters);
@@ -177,7 +178,7 @@ class ReportService
             ->whereNotNull('SalesMan')
             ->groupBy('SalesMan')
             ->orderBy('total_debt', 'desc')
-            ->limit(10)
+            ->limit($limit)
             ->get();
     }
 
@@ -220,7 +221,7 @@ class ReportService
                         $row->{'كود_العميل'},
                         $row->{'اسم_العميل'},
                         $row->{'تصنيف'},
-                        $row->{'Region_name'},
+                        $row->{'Region_Display'},
                         $row->{'SalesMan'},
                         $row->{'اجمالي_مديونية_العميل'},
                         $row->{'Not Due'},

@@ -79,7 +79,7 @@ class ReportController extends Controller
                         'classifications' => DB::connection('sqlsrv')->table($report->source_name)
                             ->whereNotNull('تصنيف')->distinct()->orderBy('تصنيف')->pluck('تصنيف'),
                         'regions' => DB::connection('sqlsrv')->table($report->source_name)
-                            ->whereNotNull('Region_name')->distinct()->orderBy('Region_name')->pluck('Region_name'),
+                            ->whereNotNull('Region_Parent')->distinct()->orderBy('Region_Parent')->pluck('Region_Parent'),
                         'salesmen' => DB::connection('sqlsrv')->table($report->source_name)
                             ->whereNotNull('SalesMan')->distinct()->orderBy('SalesMan')->pluck('SalesMan'),
                     ];
@@ -130,10 +130,14 @@ class ReportController extends Controller
 
         if ($report->code === 'aging_report') {
             $filters = $request->only(['salesman', 'region', 'status']);
+            $limit = $request->input('limit', 10);
+            
+            // Validate limit (allow only specific values for safety or just ensure it's an int)
+            $limit = is_numeric($limit) && $limit > 0 ? (int)$limit : 10;
             
             // Fetch Data
-            $topDebtors = $this->reportService->getTopDebtors($report, $filters);
-            $topSalesmen = $this->reportService->getTopSalesmen($report, $filters);
+            $topDebtors = $this->reportService->getTopDebtors($report, $filters, $limit);
+            $topSalesmen = $this->reportService->getTopSalesmen($report, $filters, $limit);
 
             // Get Filter Options (Cached)
             $filterOptions = Cache::remember('aging_report_filters', 3600, function () use ($report) {
@@ -141,13 +145,13 @@ class ReportController extends Controller
                     'classifications' => DB::connection('sqlsrv')->table($report->source_name)
                         ->whereNotNull('تصنيف')->distinct()->orderBy('تصنيف')->pluck('تصنيف'),
                     'regions' => DB::connection('sqlsrv')->table($report->source_name)
-                        ->whereNotNull('Region_name')->distinct()->orderBy('Region_name')->pluck('Region_name'),
+                        ->whereNotNull('Region_Parent')->distinct()->orderBy('Region_Parent')->pluck('Region_Parent'),
                     'salesmen' => DB::connection('sqlsrv')->table($report->source_name)
                         ->whereNotNull('SalesMan')->distinct()->orderBy('SalesMan')->pluck('SalesMan'),
                 ];
             });
 
-            return view('reports.top_10', compact('report', 'topDebtors', 'topSalesmen', 'filterOptions'));
+            return view('reports.top_10', compact('report', 'topDebtors', 'topSalesmen', 'filterOptions', 'limit'));
         }
 
         abort(404);

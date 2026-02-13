@@ -10,16 +10,20 @@
                 </a>
                 <a href="{{ route('reports.top10', $report) }}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    أعلى 10
+                    أعلى العملاء
                 </a>
-                <a href="{{ route('reports.export.excel', $report) }}?{{ http_build_query(request()->all()) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    تصدير Excel
-                </a>
-                <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    طباعة / PDF
-                </button>
+
+                @if(in_array(auth()->user()->role, ['admin', 'manager']))
+                    <a href="{{ route('reports.export.excel', $report) }}?{{ http_build_query(request()->all()) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        تصدير Excel
+                    </a>
+                    <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        طباعة / PDF
+                    </button>
+                @endif
+                
             </div>
            
         </div>
@@ -170,6 +174,8 @@
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المندوب</th>
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">إجمالي المديونية</th>
                                 <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">غير مستحق</th>
+                                <th class="px-4 py-3 font-bold text-red-700 dark:text-red-500">Over Due</th>
+                                <th class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">النسبة %</th>  
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">1-7 يوم</th>
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">8-14 يوم</th>
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">15-22 يوم</th>
@@ -177,8 +183,6 @@
                                 <th class="px-4 py-3 font-bold text-yellow-600 dark:text-yellow-400">31-60 يوم</th>
                                 <th class="px-4 py-3 font-bold text-orange-600 dark:text-orange-400">61-180 يوم</th>
                                 <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">+180 يوم</th>
-                                <th class="px-4 py-3 font-bold text-red-700 dark:text-red-500">Over Due</th>
-                                <th class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">النسبة %</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -187,18 +191,48 @@
                                     $totalDebt = $row->{'اجمالي_مديونية_العميل'} ?? 0;
                                     $notDue = $row->{'Not Due'} ?? 0;
                                     $overdue = $row->{'Over Due'} ?? 0;
-                                    // Calculate percentage excluding Not Due and Over Due
-                                    $middleAging = $totalDebt - $notDue - $overdue;
-                                    $percent = $statistics['total_debt'] > 0 ? round(($middleAging / $statistics['total_debt']) * 100, 2) : 0;
+                                    
+                                    $percent = $totalDebt > 0 ? ($overdue / $totalDebt) * 100 : 0;
+                                    $colorClass = match(true) {
+                                        $percent > 20 => 'text-red-600 dark:text-red-400',
+                                        $percent >= 15 => 'text-orange-500 dark:text-orange-400',
+                                        $percent >= 10 => 'text-yellow-500 dark:text-yellow-400',
+                                        default => 'text-green-600 dark:text-green-400',
+                                    };
+                                    $bgColorClass = match(true) {
+                                        $percent > 20 => 'bg-red-600',
+                                        $percent >= 15 => 'bg-orange-500',
+                                        $percent >= 10 => 'bg-yellow-500',
+                                        default => 'bg-green-600',
+                                    };
+                                    
+                                    // Colors for the row background (low opacity)
+                                    $rowBgColor = match(true) {
+                                        $percent > 20 => 'rgba(220, 38, 38, 0.1)',   // red-600
+                                        $percent >= 15 => 'rgba(249, 115, 22, 0.1)', // orange-500
+                                        $percent >= 10 => 'rgba(234, 179, 8, 0.1)',  // yellow-500
+                                        default => 'rgba(22, 163, 74, 0.1)',         // green-600
+                                    };
+                                    
+                                    $gradientStyle = "background: linear-gradient(to left, {$rowBgColor} " . min($percent, 100) . "%, transparent " . min($percent, 100) . "%);";
                                 @endphp
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors" style="{{ $gradientStyle }}">
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $row->{'كود_العميل'} }}</td>
                                     <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $row->{'اسم_العميل'} }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $row->{'تصنيف'} }}</td>
-                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $row->{'Region_name'} }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $row->{'Region_Display'} }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $row->{'SalesMan'} }}</td>
                                     <td class="px-4 py-3 font-bold text-slate-800 dark:text-white">{{ number_format($totalDebt, 0) }}</td>
                                     <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($notDue, 0) }}</td>
+                                   <td class="px-4 py-3 font-bold text-red-700 dark:text-red-500">{{ number_format($overdue, 0) }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="font-bold {{ $colorClass }}">{{ number_format($percent, 2) }} %</span>
+                                            <div class="w-20 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="{{ $bgColorClass }} h-full transition-all duration-500" style="width: {{ min($percent, 100) }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($row->{'1-7 Days'} ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($row->{'8-14 Days'} ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($row->{'15-22 Days'} ?? 0, 0) }}</td>
@@ -206,8 +240,7 @@
                                     <td class="px-4 py-3 text-yellow-600 dark:text-yellow-400">{{ number_format($row->{'31-60 Days'} ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 text-orange-600 dark:text-orange-400">{{ number_format($row->{'61-180 Days'} ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 text-red-600 dark:text-red-400">{{ number_format($row->{'+180 Days'} ?? 0, 0) }}</td>
-                                    <td class="px-4 py-3 font-bold text-red-700 dark:text-red-500">{{ number_format($overdue, 0) }}</td>
-                                    <td class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">{{ $percent }}%</td>
+             
                                 </tr>
                             @empty
                                 <tr>
@@ -240,16 +273,45 @@
                             @php $regionTotal = $debtSummaries['by_region']->sum('total_debt'); @endphp
                             @forelse($debtSummaries['by_region'] as $index => $region)
                                 @php
-                                    $regionPercent = $regionTotal > 0 ? round(($region->total_debt / $regionTotal) * 100, 2) : 0;
+                                    $regionPercent = $region->total_debt > 0 ? ($region->overdue / $region->total_debt) * 100 : 0;
+                                    $regionColorClass = match(true) {
+                                        $regionPercent > 20 => 'text-red-600 dark:text-red-400',
+                                        $regionPercent >= 15 => 'text-orange-500 dark:text-orange-400',
+                                        $regionPercent >= 10 => 'text-yellow-500 dark:text-yellow-400',
+                                        default => 'text-green-600 dark:text-green-400',
+                                    };
+                                    $regionBgColorClass = match(true) {
+                                        $regionPercent > 20 => 'bg-red-600',
+                                        $regionPercent >= 15 => 'bg-orange-500',
+                                        $regionPercent >= 10 => 'bg-yellow-500',
+                                        default => 'bg-green-600',
+                                    };
+                                    
+                                    // Colors for the row background (low opacity)
+                                    $regionRowBgColor = match(true) {
+                                        $regionPercent > 20 => 'rgba(220, 38, 38, 0.1)',
+                                        $regionPercent >= 15 => 'rgba(249, 115, 22, 0.1)',
+                                        $regionPercent >= 10 => 'rgba(234, 179, 8, 0.1)',
+                                        default => 'rgba(22, 163, 74, 0.1)',
+                                    };
+                                    
+                                    $regionGradientStyle = "background: linear-gradient(to left, {$regionRowBgColor} " . min($regionPercent, 100) . "%, transparent " . min($regionPercent, 100) . "%);";
                                 @endphp
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors" style="{{ $regionGradientStyle }}">
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $region->Region_name }}</td>
+                                    <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $region->Region_Display }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($region->customers_count) }}</td>
                                     <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($region->total_debt, 0) }}</td>
                                     <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($region->not_due ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 font-bold text-red-600 dark:text-red-400">{{ number_format($region->overdue ?? 0, 0) }}</td>
-                                    <td class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">{{ $regionPercent }}%</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="font-bold {{ $regionColorClass }}">{{ number_format($regionPercent, 2) }}%</span>
+                                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="{{ $regionBgColorClass }} h-full transition-all duration-500" style="width: {{ min($regionPercent, 100) }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -267,7 +329,17 @@
                                 <td class="px-4 py-3 text-indigo-600 dark:text-indigo-400">{{ number_format($regionTotal, 0) }}</td>
                                 <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($debtSummaries['by_region']->sum('not_due'), 0) }}</td>
                                 <td class="px-4 py-3 text-red-600 dark:text-red-400">{{ number_format($debtSummaries['by_region']->sum('overdue'), 0) }}</td>
-                                <td class="px-4 py-3 text-purple-600 dark:text-purple-400">100%</td>
+                                @php
+                                    $totalOverdueRegion = $debtSummaries['by_region']->sum('overdue');
+                                    $totalPercentRegion = $regionTotal > 0 ? ($totalOverdueRegion / $regionTotal) * 100 : 0;
+                                    $totalColorRegion = match(true) {
+                                        $totalPercentRegion > 20 => 'text-red-600 dark:text-red-400',
+                                        $totalPercentRegion >= 15 => 'text-orange-500 dark:text-orange-400',
+                                        $totalPercentRegion >= 10 => 'text-yellow-500 dark:text-yellow-400',
+                                        default => 'text-green-600 dark:text-green-400',
+                                    };
+                                @endphp
+                                <td class="px-4 py-3 {{ $totalColorRegion }}">{{ number_format($totalPercentRegion, 2) }}%</td>
                             </tr>
                         </tfoot>
                         @endif
@@ -295,17 +367,46 @@
                             @php $salesmanTotal = $debtSummaries['by_salesman']->sum('total_debt'); @endphp
                             @forelse($debtSummaries['by_salesman'] as $index => $salesman)
                                 @php
-                                    $salesmanPercent = $salesmanTotal > 0 ? round(($salesman->total_debt / $salesmanTotal) * 100, 2) : 0;
+                                    $salesmanPercent = $salesman->total_debt > 0 ? ($salesman->overdue / $salesman->total_debt) * 100 : 0;
+                                    $salesmanColorClass = match(true) {
+                                        $salesmanPercent > 20 => 'text-red-600 dark:text-red-400',
+                                        $salesmanPercent >= 15 => 'text-orange-500 dark:text-orange-400',
+                                        $salesmanPercent >= 10 => 'text-yellow-500 dark:text-yellow-400',
+                                        default => 'text-green-600 dark:text-green-400',
+                                    };
+                                    $salesmanBgColorClass = match(true) {
+                                        $salesmanPercent > 20 => 'bg-red-600',
+                                        $salesmanPercent >= 15 => 'bg-orange-500',
+                                        $salesmanPercent >= 10 => 'bg-yellow-500',
+                                        default => 'bg-green-600',
+                                    };
+                                    
+                                    // Colors for the row background (low opacity)
+                                    $salesmanRowBgColor = match(true) {
+                                        $salesmanPercent > 20 => 'rgba(220, 38, 38, 0.1)',
+                                        $salesmanPercent >= 15 => 'rgba(249, 115, 22, 0.1)',
+                                        $salesmanPercent >= 10 => 'rgba(234, 179, 8, 0.1)',
+                                        default => 'rgba(22, 163, 74, 0.1)',
+                                    };
+                                    
+                                    $salesmanGradientStyle = "background: linear-gradient(to left, {$salesmanRowBgColor} " . min($salesmanPercent, 100) . "%, transparent " . min($salesmanPercent, 100) . "%);";
                                 @endphp
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors" style="{{ $salesmanGradientStyle }}">
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $index + 1 }}</td>
                                     <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $salesman->SalesMan }}</td>
-                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $salesman->Region_name }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $salesman->Region_Display }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($salesman->customers_count) }}</td>
                                     <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($salesman->total_debt, 0) }}</td>
                                     <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($salesman->not_due ?? 0, 0) }}</td>
                                     <td class="px-4 py-3 font-bold text-red-600 dark:text-red-400">{{ number_format($salesman->overdue ?? 0, 0) }}</td>
-                                    <td class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">{{ $salesmanPercent }}%</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="font-bold {{ $salesmanColorClass }}">{{ number_format($salesmanPercent, 2) }}%</span>
+                                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="{{ $salesmanBgColorClass }} h-full transition-all duration-500" style="width: {{ min($salesmanPercent, 100) }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -323,10 +424,21 @@
                                 <td class="px-4 py-3 text-indigo-600 dark:text-indigo-400">{{ number_format($salesmanTotal, 0) }}</td>
                                 <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($debtSummaries['by_salesman']->sum('not_due'), 0) }}</td>
                                 <td class="px-4 py-3 text-red-600 dark:text-red-400">{{ number_format($debtSummaries['by_salesman']->sum('overdue'), 0) }}</td>
-                                <td class="px-4 py-3 text-purple-600 dark:text-purple-400">100%</td>
+                                @php
+                                    $totalOverdueSalesman = $debtSummaries['by_salesman']->sum('overdue');
+                                    $totalPercentSalesman = $salesmanTotal > 0 ? ($totalOverdueSalesman / $salesmanTotal) * 100 : 0;
+                                    $totalColorSalesman = match(true) {
+                                        $totalPercentSalesman > 20 => 'text-red-600 dark:text-red-400',
+                                        $totalPercentSalesman >= 15 => 'text-orange-500 dark:text-orange-400',
+                                        $totalPercentSalesman >= 10 => 'text-yellow-500 dark:text-yellow-400',
+                                        default => 'text-green-600 dark:text-green-400',
+                                    };
+                                @endphp
+                                <td class="px-4 py-3 {{ $totalColorSalesman }}">{{ number_format($totalPercentSalesman, 2) }}%</td>
                             </tr>
                         </tfoot>
                         @endif
+
                     </table>
                 </div>
             </div>
