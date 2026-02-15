@@ -27,7 +27,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'view settings',
             'edit settings',
             'view reports',
-            'manage report visibility'
+            'manage report visibility',
+            'export excel'
         ];
 
         foreach ($permissions as $permission) {

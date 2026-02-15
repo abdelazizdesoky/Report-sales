@@ -31,7 +31,7 @@
                                             $moduleGroups = [
                                                 'المستخدمين' => ['view users', 'create users', 'edit users', 'delete users'],
                                                 'الإعدادات' => ['view settings', 'edit settings'],
-                                                'التقارير' => ['view reports', 'manage report visibility'],
+                                                'التقارير' => ['view reports', 'manage report visibility', 'export excel'],
                                             ];
                                         @endphp
                                         @foreach($moduleGroups as $groupName => $perms)
@@ -45,7 +45,7 @@
                                         @foreach($moduleGroups as $perms)
                                             @foreach($perms as $perm)
                                                 <th class="px-2 py-2 text-[10px] font-bold text-slate-500 text-center border-x border-slate-200/50 dark:border-slate-800/50">
-                                                    {{ str_replace(['view ', 'create ', 'edit ', 'delete ', 'manage ', ' visibility'], ['عرض ', 'إضافة ', 'تعديل ', 'حذف ', 'إدارة ', ''], $perm) }}
+                                                    {{ str_replace(['view ', 'create ', 'edit ', 'delete ', 'manage ', ' visibility', 'export excel'], ['عرض ', 'إضافة ', 'تعديل ', 'حذف ', 'إدارة ', ' ', 'تصدير إكسل'], $perm) }}
                                                 </th>
                                             @endforeach
                                         @endforeach

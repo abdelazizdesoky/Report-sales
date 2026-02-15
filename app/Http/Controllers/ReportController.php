@@ -103,10 +103,15 @@ class ReportController extends Controller
     {
         $user = auth()->user();
         
-        if (!$user->hasRole('Admin')) {
+        if (!$user->can('export excel') && !$user->hasRole('Admin')) {
             $allowed = $report->roles()->whereIn('roles.id', $user->roles->pluck('id'))->exists();
             if (!$allowed) {
-                abort(403);
+                abort(403, 'غير مصرح لك بتصدير البيانات.');
+            }
+            
+            // If they have report access but NOT export permission, abort
+            if (!$user->can('export excel')) {
+                abort(403, 'ليس لديك صلاحية تصدير ملفات اكسل.');
             }
         }
 

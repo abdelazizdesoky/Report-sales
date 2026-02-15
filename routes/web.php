@@ -3,9 +3,10 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+
+Route::get('/', [App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -39,5 +40,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/salesmen-sync/assign', [App\Http\Controllers\SalesmanManagementController::class, 'assign'])->name('salesmen-sync.assign');
     Route::delete('/salesmen-sync/unassign/{manager}/{salesman}', [App\Http\Controllers\SalesmanManagementController::class, 'unassign'])->name('salesmen-sync.unassign');
 });
+
 
 require __DIR__.'/auth.php';

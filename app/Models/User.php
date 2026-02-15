@@ -87,8 +87,8 @@ class User extends Authenticatable
 
         $names = [];
 
-        // If Manager or Area Manager, get names from all subordinates recursively
-        if ($this->hasRole('Manager') || $this->hasRole('Area Manager')) {
+        // If Manager, Area Manager or Supervisor, get names from all subordinates recursively
+        if ($this->hasRole('Manager') || $this->hasRole('Area Manager') || $this->hasRole('Supervisor')) {
             foreach ($this->subordinates as $subordinate) {
                 $names = array_merge($names, $subordinate->getManagedSalesmenNames());
             }

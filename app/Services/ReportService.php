@@ -210,26 +210,35 @@ class ReportService
 
             // Add Headers
             fputcsv($handle, [
-                'كود العميل', 'اسم العميل', 'التصنيف', 'المنطقة', 'المندوب', 
-                'إجمالي المديونية', 'غير مستحق', '1-30 يوم', '31-60 يوم', 
-                '61-180 يوم', '+180 يوم', 'Over Due'
+                'الكود', 'العميل', 'التصنيف', 'المنطقة', 'المندوب', 
+                'إجمالي المديونية', 'غير مستحق', 'Over Due', 'النسبة %',
+                '1-7 يوم', '8-14 يوم', '15-22 يوم', '23-30 يوم',
+                '31-60 يوم', '61-180 يوم', '+180 يوم'
             ]);
 
             $query->chunk(500, function($rows) use ($handle) {
                 foreach ($rows as $row) {
+                    $totalDebt = $row->{'اجمالي_مديونية_العميل'} ?? 0;
+                    $overdue = $row->{'Over Due'} ?? 0;
+                    $percent = $totalDebt > 0 ? ($overdue / $totalDebt) * 100 : 0;
+
                     fputcsv($handle, [
                         $row->{'كود_العميل'},
                         $row->{'اسم_العميل'},
                         $row->{'تصنيف'},
                         $row->{'Region_Display'},
                         $row->{'SalesMan'},
-                        $row->{'اجمالي_مديونية_العميل'},
-                        $row->{'Not Due'},
-                        $row->{'1-7 Days'} + $row->{'8-14 Days'} + $row->{'15-22 Days'} + $row->{'23-30 Days'},
-                        $row->{'31-60 Days'},
-                        $row->{'61-180 Days'},
-                        $row->{'+180 Days'},
-                        $row->{'Over Due'},
+                        $totalDebt,
+                        $row->{'Not Due'} ?? 0,
+                        $overdue,
+                        number_format($percent, 2) . ' %',
+                        $row->{'1-7 Days'} ?? 0,
+                        $row->{'8-14 Days'} ?? 0,
+                        $row->{'15-22 Days'} ?? 0,
+                        $row->{'23-30 Days'} ?? 0,
+                        $row->{'31-60 Days'} ?? 0,
+                        $row->{'61-180 Days'} ?? 0,
+                        $row->{'+180 Days'} ?? 0,
                     ]);
                 }
             });
