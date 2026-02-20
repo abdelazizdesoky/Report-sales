@@ -1,24 +1,26 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-row-reverse items-center justify-between w-full">
+        <div class="flex flex-col lg:flex-row-reverse items-start lg:items-center justify-between w-full gap-6">
              <h2 class="font-black text-2xl text-white leading-tight">
                 📊 إحصائيات أعلى {{ $limit }} - {{ $report->name }}
             </h2>
 
+            <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
                 <!-- Limit Buttons -->
-                <div class="  bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 overflow-x-auto max-w-full">
                     @foreach([10, 20, 50, 100] as $l)
                         <a href="{{ route('reports.top10', $report) }}?{{ http_build_query(array_merge(request()->except('limit'), ['limit' => $l])) }}" 
-                           class="px-4 py-2 rounded-md font-bold text-sm transition-all {{ $limit == $l ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                           class="px-3 py-1.5 rounded-md font-bold text-xs md:text-sm transition-all whitespace-nowrap {{ $limit == $l ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
                             أعلى {{ $l }}
                         </a>
                     @endforeach
                 </div>
 
-            <div class="flex gap-2">
-                <a href="{{ route('reports.show', $report) }}" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-bold text-sm">
-                    عودة للتقرير الرئيسي &rarr;
-                </a>
+                <div class="flex gap-2 mr-auto lg:mr-0">
+                    <a href="{{ route('reports.show', $report) }}" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-bold text-xs md:text-sm whitespace-nowrap">
+                        عودة &rarr;
+                    </a>
+                </div>
             </div>
            
         </div>

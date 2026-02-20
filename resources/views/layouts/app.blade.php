@@ -122,7 +122,7 @@
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50 dark:bg-slate-950/50">
+                <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-slate-50 dark:bg-slate-950/50">
                     <div class="max-w-7xl mx-auto">
                         {{ $slot }}
                     </div>
@@ -134,22 +134,41 @@
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('sidebar-toggle');
             
-            // Check storage for sidebar state
-            if (localStorage.getItem('sidebar-collapsed') === 'true') {
-                sidebar.classList.add('sidebar-collapsed');
-                sidebar.classList.replace('w-72', 'w-20');
-            }
-
-            toggle.addEventListener('click', () => {
-                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+            function updateSidebarState(isCollapsed) {
                 if (isCollapsed) {
-                    sidebar.classList.remove('sidebar-collapsed');
-                    sidebar.classList.replace('w-20', 'w-72');
-                    localStorage.setItem('sidebar-collapsed', 'false');
-                } else {
                     sidebar.classList.add('sidebar-collapsed');
                     sidebar.classList.replace('w-72', 'w-20');
-                    localStorage.setItem('sidebar-collapsed', 'true');
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    sidebar.classList.replace('w-20', 'w-72');
+                }
+            }
+
+            // Function to determine if we should be collapsed based on screen width
+            const shouldBeCollapsed = () => window.innerWidth < 1024;
+
+            // Initial state: prioritize screen size if no manual toggle has been performed
+            let storedPreference = localStorage.getItem('sidebar-collapsed');
+            let sidebarCollapsed;
+
+            if (storedPreference !== null) {
+                sidebarCollapsed = storedPreference === 'true';
+            } else {
+                sidebarCollapsed = shouldBeCollapsed();
+            }
+
+            updateSidebarState(sidebarCollapsed);
+
+            toggle.addEventListener('click', () => {
+                sidebarCollapsed = !sidebar.classList.contains('sidebar-collapsed');
+                updateSidebarState(sidebarCollapsed);
+                localStorage.setItem('sidebar-collapsed', sidebarCollapsed);
+            });
+
+            // Optional: Listen for resize to adjust automatically if user hasn't explicitly toggled
+            window.addEventListener('resize', () => {
+                if (localStorage.getItem('sidebar-collapsed') === null) {
+                    updateSidebarState(shouldBeCollapsed());
                 }
             });
 

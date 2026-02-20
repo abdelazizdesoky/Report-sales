@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-row-reverse items-center justify-between w-full">
+        <div class="flex flex-col md:flex-row-reverse items-start md:items-center justify-between w-full gap-4">
              <h2 class="font-black text-2xl text-slate-800 dark:text-white leading-tight">
                 {{ $report->name }}
             </h2>
-            <div class="flex gap-2 print:hidden items-center">
+            <div class="flex flex-wrap gap-2 print:hidden items-center">
                 <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors font-bold text-sm">
                     عودة &rarr;
                 </a>
@@ -16,17 +16,10 @@
                     @if(auth()->user()->can('export excel') || auth()->user()->hasRole('Admin'))
                     <a href="{{ route('reports.export.excel', $report) }}?{{ http_build_query(request()->all()) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        تصدير Excel
+                        Excel
                     </a>
                     @endif
-                    <!-- <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        طباعة / PDF
-                    </button> -->
-              
-                
             </div>
-           
         </div>
     </x-slot>
 
@@ -62,24 +55,31 @@
             $overduePercent = $statistics['total_debt'] > 0 ? round(($statistics['total_overdue'] / $statistics['total_debt']) * 100, 1) : 0;
             $notDuePercent = $statistics['total_debt'] > 0 ? round(($statistics['total_not_due'] / $statistics['total_debt']) * 100, 1) : 0;
         @endphp
-        <div class="flex gap-8 flex-nowrap overflow-x-auto print:hidden">
-            <div class="glass-card px-12 py-8  flex items-center gap-3 whitespace-nowrap">
-                <span class="text-sm text-slate-500 dark:text-slate-400">العملاء:</span>
-                <span class="text-base font-bold text-slate-800 dark:text-white">{{ number_format($statistics['total_customers']) }}</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+            <div class="glass-card px-6 py-4 flex items-center justify-between gap-3">
+                <span class="text-xs text-slate-500 dark:text-slate-400">العملاء:</span>
+                <span class="text-lg font-bold text-slate-800 dark:text-white">{{ number_format($statistics['total_customers']) }}</span>
             </div>
-            <div class="glass-card px-8  py-4 flex items-center gap-3 whitespace-nowrap">
-                <span class="text-sm text-slate-500 dark:text-slate-400">المديونية:</span>
-                <span class="text-base font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($statistics['total_debt'], 0) }}</span>
+            <div class="glass-card px-6 py-4 flex items-center justify-between gap-3">
+                <span class="text-xs text-slate-500 dark:text-slate-400">المديونية:</span>
+                <span class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($statistics['total_debt'], 0) }}</span>
             </div>
-            <div class="glass-card px-8 py-4 flex items-center gap-3 whitespace-nowrap border-r-2 border-red-500">
-                <span class="text-sm text-slate-500 dark:text-slate-400">(Over Due)مستحق:</span>
-                <span class="text-base font-bold text-red-600 dark:text-red-400">{{ number_format($statistics['total_overdue'], 0) }}</span>
-                <span class="text-sm text-red-500">({{ $overduePercent }}%)</span>
+            <div class="glass-card px-6 py-4 flex items-center justify-between gap-3 border-r-2 border-red-500">
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 leading-none mb-1">Over Due</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">مستحق:</span>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-bold text-red-600 dark:text-red-400 leading-none">{{ number_format($statistics['total_overdue'], 0) }}</p>
+                    <span class="text-[10px] text-red-500">({{ $overduePercent }}%)</span>
+                </div>
             </div>
-            <div class="glass-card px-8 py-4 flex items-center gap-3 whitespace-nowrap border-r-2 border-green-500">
-                <span class="text-sm text-slate-500 dark:text-slate-400">غير مستحق:</span>
-                <span class="text-base font-bold text-green-600 dark:text-green-400">{{ number_format($statistics['total_not_due'], 0) }}</span>
-                <span class="text-sm text-green-500">({{ $notDuePercent }}%)</span>
+            <div class="glass-card px-6 py-4 flex items-center justify-between gap-3 border-r-2 border-green-500">
+                <span class="text-xs text-slate-500 dark:text-slate-400">غير مستحق:</span>
+                <div class="text-right">
+                    <p class="text-lg font-bold text-green-600 dark:text-green-400 leading-none">{{ number_format($statistics['total_not_due'], 0) }}</p>
+                    <span class="text-[10px] text-green-500">({{ $notDuePercent }}%)</span>
+                </div>
             </div>
         </div>
         
