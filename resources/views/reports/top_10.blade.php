@@ -54,8 +54,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">المندوب</label>
-                        <select id="select-salesman" name="salesman" placeholder="اختر المندوب...">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">مدير قطاع</label>
+                        <select id="select-salesman" name="salesman" placeholder="اختر مدير قطاع...">
                             <option value="">الكل</option>
                             @foreach($filterOptions['salesmen'] as $option)
                                 <option value="{{ $option }}" {{ request('salesman') == $option ? 'selected' : '' }}>{{ $option }}</option>
@@ -109,7 +109,7 @@
                         <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                             <th class="px-4 py-3 w-10">#</th>
                             <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">العميل</th>
-                            <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المندوب</th>
+                            <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">مدير قطاع</th>
                             <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المنطقة</th>
                             <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">إجمالي المديونية</th>
                             <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">Over Due</th>
@@ -170,14 +170,14 @@
         <!-- Salesmen Tab -->
         <div x-show="activeTab === 'salesmen'" class="glass-card overflow-hidden" x-transition style="display: none;">
             <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 class="font-bold text-lg text-slate-800 dark:text-white">قائمة المندوبين الـ {{ $limit }} الأعلى مديونية (إجمالي العملاء)</h3>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-white">قائمة مدير قطاعين الـ {{ $limit }} الأعلى مديونية (إجمالي العملاء)</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-right border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                             <th class="px-4 py-3 w-10">#</th>
-                            <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المندوب</th>
+                            <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">مدير قطاع</th>
                             <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">عدد العملاء</th>
                             <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">إجمالي مديونية العملاء</th>
                             <th class="px-4 py-3 w-1/3">مؤشر</th>

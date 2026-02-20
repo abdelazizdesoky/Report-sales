@@ -72,7 +72,7 @@
                 <span class="text-base font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($statistics['total_debt'], 0) }}</span>
             </div>
             <div class="glass-card px-8 py-4 flex items-center gap-3 whitespace-nowrap border-r-2 border-red-500">
-                <span class="text-sm text-slate-500 dark:text-slate-400">مستحق:</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">(Over Due)مستحق:</span>
                 <span class="text-base font-bold text-red-600 dark:text-red-400">{{ number_format($statistics['total_overdue'], 0) }}</span>
                 <span class="text-sm text-red-500">({{ $overduePercent }}%)</span>
             </div>
@@ -82,6 +82,29 @@
                 <span class="text-sm text-green-500">({{ $notDuePercent }}%)</span>
             </div>
         </div>
+        
+        @php
+            $sortBy = request('sort_by', 'Over Due');
+            $sortDir = request('sort_dir', 'desc');
+            $regionSortBy = request('region_sort_by', 'total_debt');
+            $regionSortDir = request('region_sort_dir', 'desc');
+            $salesmanSortBy = request('salesman_sort_by', 'total_debt');
+            $salesmanSortDir = request('salesman_sort_dir', 'desc');
+
+            if (!function_exists('getSortLink')) {
+                function getSortLink($column, $currentSort, $currentDir, $paramName = 'sort_by', $dirParamName = 'sort_dir') {
+                    $dir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
+                    return request()->fullUrlWithQuery([$paramName => $column, $dirParamName => $dir]);
+                }
+            }
+
+            if (!function_exists('getSortIcon')) {
+                function getSortIcon($column, $currentSort, $currentDir) {
+                    if ($currentSort !== $column) return '↕';
+                    return $currentDir === 'asc' ? '↑' : '↓';
+                }
+            }
+        @endphp
 
         <!-- Filters -->
         <div class="glass-card p-6 print:hidden">
@@ -112,8 +135,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">المندوب</label>
-                    <select id="select-salesman" name="salesman" placeholder="اختر المندوب...">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">مدير قطاع</label>
+                    <select id="select-salesman" name="salesman" placeholder="اختر مدير قطاع...">
                         <option value="">الكل</option>
                         @foreach($filterOptions['salesmen'] as $option)
                             <option value="{{ $option }}" {{ request('salesman') == $option ? 'selected' : '' }}>{{ $option }}</option>
@@ -158,7 +181,7 @@
                 </button>
                 <button onclick="switchTab('salesmen')" id="tab-salesmen" class="tab-button px-6 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    ملخص المندوبين
+                    ملخص مديرى القطاعات 
                 </button>
             </div>
 
@@ -168,14 +191,46 @@
                     <table class="w-full text-right border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">الكود</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">العميل</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">التصنيف</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المنطقة</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المندوب</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">إجمالي المديونية</th>
-                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">غير مستحق</th>
-                                <th class="px-4 py-3 font-bold text-red-700 dark:text-red-500">Over Due</th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('كود_العميل', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        الكود <span>{{ getSortIcon('كود_العميل', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('اسم_العميل', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        العميل <span>{{ getSortIcon('اسم_العميل', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('تصنيف', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        التصنيف <span>{{ getSortIcon('تصنيف', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('Region_Parent', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        المنطقة <span>{{ getSortIcon('Region_Parent', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('SalesMan', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        مدير قطاع <span>{{ getSortIcon('SalesMan', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('اجمالي_مديونية_العميل', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        إجمالي المديونية <span>{{ getSortIcon('اجمالي_مديونية_العميل', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">
+                                    <a href="{{ getSortLink('Not Due', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-green-700">
+                                        غير مستحق <span>{{ getSortIcon('Not Due', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-red-700 dark:text-red-500">
+                                    <a href="{{ getSortLink('Over Due', $sortBy, $sortDir) }}" class="flex items-center gap-1 justify-end hover:text-red-800">
+                                        Over Due <span>{{ getSortIcon('Over Due', $sortBy, $sortDir) }}</span>
+                                    </a>
+                                </th>
                                 <th class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">النسبة %</th>  
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">1-7 يوم</th>
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">8-14 يوم</th>
@@ -262,11 +317,32 @@
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">#</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المنطقة</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">عدد العملاء</th>
-                                <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">إجمالي المديونية</th>
-                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">غير مستحق</th>
-                                <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">المستحق (Over Due)</th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('Region_Parent', $regionSortBy, $regionSortDir, 'region_sort_by', 'region_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        المنطقة <span>{{ getSortIcon('Region_Parent', $regionSortBy, $regionSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">مدير المنطقة</th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('customers_count', $regionSortBy, $regionSortDir, 'region_sort_by', 'region_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        عدد العملاء <span>{{ getSortIcon('customers_count', $regionSortBy, $regionSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">
+                                    <a href="{{ getSortLink('total_debt', $regionSortBy, $regionSortDir, 'region_sort_by', 'region_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        إجمالي المديونية <span>{{ getSortIcon('total_debt', $regionSortBy, $regionSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">
+                                    <a href="{{ getSortLink('not_due', $regionSortBy, $regionSortDir, 'region_sort_by', 'region_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-green-700">
+                                        غير مستحق <span>{{ getSortIcon('not_due', $regionSortBy, $regionSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">
+                                    <a href="{{ getSortLink('overdue', $regionSortBy, $regionSortDir, 'region_sort_by', 'region_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-red-800">
+                                        المستحق (Over Due) <span>{{ getSortIcon('overdue', $regionSortBy, $regionSortDir) }}</span>
+                                    </a>
+                                </th>
                                 <th class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">النسبة %</th>
                             </tr>
                         </thead>
@@ -301,6 +377,7 @@
                                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors" style="{{ $regionGradientStyle }}">
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $index + 1 }}</td>
                                     <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $region->Region_Display }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $region->area_manager }}</td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ number_format($region->customers_count) }}</td>
                                     <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($region->total_debt, 0) }}</td>
                                     <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($region->not_due ?? 0, 0) }}</td>
@@ -326,6 +403,7 @@
                         <tfoot class="bg-slate-100 dark:bg-slate-800/50">
                             <tr class="font-bold">
                                 <td colspan="2" class="px-4 py-3 text-slate-800 dark:text-white">الإجمالي</td>
+                                    <td></td>
                                 <td class="px-4 py-3 text-slate-800 dark:text-white">{{ number_format($debtSummaries['by_region']->sum('customers_count')) }}</td>
                                 <td class="px-4 py-3 text-indigo-600 dark:text-indigo-400">{{ number_format($regionTotal, 0) }}</td>
                                 <td class="px-4 py-3 text-green-600 dark:text-green-400">{{ number_format($debtSummaries['by_region']->sum('not_due'), 0) }}</td>
@@ -355,12 +433,36 @@
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">#</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المندوب</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">المنطقة</th>
-                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">عدد العملاء</th>
-                                <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">إجمالي المديونية</th>
-                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">غير مستحق</th>
-                                <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">المستحق (Over Due)</th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('SalesMan', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        مدير قطاع <span>{{ getSortIcon('SalesMan', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('Region_Parent', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        المنطقة <span>{{ getSortIcon('Region_Parent', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
+                                    <a href="{{ getSortLink('customers_count', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        عدد العملاء <span>{{ getSortIcon('customers_count', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">
+                                    <a href="{{ getSortLink('total_debt', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-indigo-600">
+                                        إجمالي المديونية <span>{{ getSortIcon('total_debt', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-green-600 dark:text-green-400">
+                                    <a href="{{ getSortLink('not_due', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-green-700">
+                                        غير مستحق <span>{{ getSortIcon('not_due', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 font-bold text-red-600 dark:text-red-400">
+                                    <a href="{{ getSortLink('overdue', $salesmanSortBy, $salesmanSortDir, 'salesman_sort_by', 'salesman_sort_dir') }}" class="flex items-center gap-1 justify-end hover:text-red-800">
+                                        المستحق (Over Due) <span>{{ getSortIcon('overdue', $salesmanSortBy, $salesmanSortDir) }}</span>
+                                    </a>
+                                </th>
                                 <th class="px-4 py-3 font-bold text-purple-600 dark:text-purple-400">النسبة %</th>
                             </tr>
                         </thead>

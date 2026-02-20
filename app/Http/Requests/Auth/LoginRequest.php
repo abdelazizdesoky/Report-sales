@@ -44,13 +44,13 @@ class LoginRequest extends FormRequest
         $login = $this->input('login');
         
         // Try to authenticate using email first
-        if (Auth::attempt(['email' => $login, 'password' => $this->password], $this->boolean('remember'))) {
+        if (Auth::attempt(['email' => $login, 'password' => $this->password, 'is_enabled' => true], $this->boolean('remember'))) {
             RateLimiter::clear($this->throttleKey());
             return;
         }
 
         // Try to authenticate using username
-        if (Auth::attempt(['username' => $login, 'password' => $this->password], $this->boolean('remember'))) {
+        if (Auth::attempt(['username' => $login, 'password' => $this->password, 'is_enabled' => true], $this->boolean('remember'))) {
             RateLimiter::clear($this->throttleKey());
             return;
         }

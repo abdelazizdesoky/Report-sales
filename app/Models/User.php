@@ -24,7 +24,9 @@ class User extends Authenticatable
         'email',
         'password',
         'salesman_name',
+        'region',
         'supervisor_id',
+        'is_enabled',
     ];
 
     /**
@@ -47,6 +49,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_enabled' => 'boolean',
         ];
     }
 
@@ -80,8 +83,8 @@ class User extends Authenticatable
      */
     public function getManagedSalesmenNames(): array
     {
-        // Admin and General Manager see all, handled by skipping the filter in ReportService
-        if ($this->hasRole('Admin') || $this->hasRole('General Manager')) {
+        // Admin, General Manager and Coordinator see all, handled by skipping the filter in ReportService
+        if ($this->hasRole('Admin') || $this->hasRole('General Manager') || $this->hasRole('Coordinator')) {
             return [];
         }
 
@@ -89,7 +92,7 @@ class User extends Authenticatable
 
         // If Manager, Area Manager or Supervisor, get names from all subordinates recursively
         if ($this->hasRole('Manager') || $this->hasRole('Area Manager') || $this->hasRole('Supervisor')) {
-            foreach ($this->subordinates as $subordinate) {
+            foreach ($this->subordinates()->where('is_enabled', true)->get() as $subordinate) {
                 $names = array_merge($names, $subordinate->getManagedSalesmenNames());
             }
         }

@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/{report}', [App\Http\Controllers\ReportController::class, 'show'])->name('reports.show');
     Route::get('/reports/{report}/export-excel', [App\Http\Controllers\ReportController::class, 'exportExcel'])->name('reports.export.excel');
     Route::get('/reports/{report}/top10', [App\Http\Controllers\ReportController::class, 'top10'])->name('reports.top10');
+    Route::get('/hierarchy-report', [App\Http\Controllers\HierarchyController::class, 'index'])->name('reports.hierarchy');
 
     // Settings
     Route::get('/settings', [App\Http\Controllers\SettingController::class, 'edit'])->name('settings.edit');
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
 
     // User Management
     Route::resource('users', App\Http\Controllers\UserController::class);
+    Route::patch('/users/{user}/toggle-status', [App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     // Salesman Management
     Route::get('/salesmen-sync', [App\Http\Controllers\SalesmanManagementController::class, 'index'])->name('salesmen-sync.index');

@@ -43,7 +43,7 @@ class ReportService
 
         // Security: Restrict based on user role and hierarchy
         $user = auth()->user();
-        if ($user && !$user->hasRole('Admin') && !$user->hasRole('General Manager')) {
+        if ($user && !$user->hasRole('Admin') && !$user->hasRole('General Manager') && !$user->hasRole('Coordinator')) {
             $managedNames = $user->getManagedSalesmenNames();
             
             if (!empty($managedNames)) {
@@ -144,20 +144,55 @@ class ReportService
      */
     public function getDebtSummaries(Report $report, array $filters = []): array
     {
+        // Sort parameters for summaries
+        $regionSort = $filters['region_sort_by'] ?? 'total_debt';
+        $regionDir = $filters['region_sort_dir'] ?? 'desc';
+        $salesmanSort = $filters['salesman_sort_by'] ?? 'total_debt';
+        $salesmanDir = $filters['salesman_sort_dir'] ?? 'desc';
+
         // Summary by Region
         $byRegion = $this->getBaseQuery($report, $filters)
             ->select('Region_Parent as Region_Display', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
             ->whereNotNull('Region_Parent')
             ->groupBy('Region_Parent')
-            ->orderBy('total_debt', 'desc')
+            ->orderBy($regionSort, $regionDir)
             ->get();
+
+        // Map Area Managers to Regions - filter for enabled managers only
+        $areaManagers = \App\Models\User::role('Area Manager')->where('is_enabled', true)->with('managedSalesmen')->get();
+        $salesmanToManagers = [];
+        foreach ($areaManagers as $am) {
+            foreach ($am->managedSalesmen as $ms) {
+                $salesmanToManagers[$ms->salesman_name][] = $am->name;
+            }
+        }
+
+        // Get all region-salesman pairs from SQL Server
+        $regionSalesmen = $this->getBaseQuery($report, $filters)
+            ->select('Region_Parent', 'SalesMan')
+            ->whereNotNull('Region_Parent')
+            ->whereNotNull('SalesMan')
+            ->distinct()
+            ->get()
+            ->groupBy('Region_Parent');
+
+        foreach ($byRegion as $region) {
+            $salesmenInRegion = $regionSalesmen->get($region->Region_Display, collect())->pluck('SalesMan');
+            $managers = [];
+            foreach ($salesmenInRegion as $sm) {
+                if (isset($salesmanToManagers[$sm])) {
+                    $managers = array_merge($managers, $salesmanToManagers[$sm]);
+                }
+            }
+            $region->area_manager = !empty($managers) ? implode(', ', array_unique($managers)) : 'غير محدد';
+        }
 
         // Summary by Salesman
         $bySalesman = $this->getBaseQuery($report, $filters)
             ->select('SalesMan', 'Region_Parent as Region_Display', DB::raw('COUNT(*) as customers_count'), DB::raw('SUM(اجمالي_مديونية_العميل) as total_debt'), DB::raw('SUM([Not Due]) as not_due'), DB::raw('SUM([Over Due]) as overdue'))
             ->whereNotNull('SalesMan')
             ->groupBy('SalesMan', 'Region_Parent')
-            ->orderBy('total_debt', 'desc')
+            ->orderBy($salesmanSort, $salesmanDir)
             ->get();
 
         return [

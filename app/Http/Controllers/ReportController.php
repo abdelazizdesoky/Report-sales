@@ -51,7 +51,7 @@ class ReportController extends Controller
 
         // Custom view for aging report
         if ($report->code === 'aging_report') {
-            $filters = $request->only(['search', 'classification', 'salesman', 'region', 'status', 'sort_by', 'sort_dir']);
+            $filters = $request->only(['search', 'classification', 'salesman', 'region', 'status', 'sort_by', 'sort_dir', 'region_sort_by', 'region_sort_dir', 'salesman_sort_by', 'salesman_sort_dir']);
             
             try {
                 $data = $this->reportService->getAgingReportData($report, $filters, 15, $page);

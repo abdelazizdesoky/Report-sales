@@ -25,12 +25,12 @@
         </div>
 
         <!-- Remember Me -->
-        <!-- <div class="block mt-4 text-right">
+        <div class="block mt-4 text-right">
             <label for="remember_me" class="inline-flex items-center">
                 <span class="mr-2 text-sm text-slate-600 dark:text-slate-400">{{ __('تذكرني') }}</span>
                 <input id="remember_me" type="checkbox" class="rounded dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-slate-800" name="remember">
             </label>
-        </div> -->
+        </div>
 
         <div class="flex items-center justify-between mt-4">
             <!-- @if (Route::has('password.request'))
