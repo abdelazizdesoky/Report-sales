@@ -131,7 +131,7 @@
         }
 
         /* Vertical Connector from Parent down to Branching Bar */
-        .tree li > ul::before {
+        .tree li > .branch-container::before {
             content: '';
             position: absolute;
             top: -40px;
@@ -203,8 +203,56 @@
             align-items: center;
             padding-top: 20px;
         }
-        .tree ul.vertical-stack::before { height: 22px; top: -20px; }
         
+        .branch-container.expanded {
+            display: flex !important;
+        }
+        
+        .branch-container.vertical-stack.expanded {
+            flex-direction: column !important;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Condensed hint for collapsed parents - "Stacked" cards look */
+        .node-card.has-children:not(.expanded-card)::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: 200px; /* Fixed width for standardized stack */
+            height: 100%;
+            background: var(--h-card-bg);
+            border: 1px solid var(--h-card-border);
+            border-radius: 20px;
+            z-index: -1;
+            box-shadow: var(--h-shadow);
+            opacity: 0.7;
+            transform: scale(0.96);
+        }
+        
+        .node-card.has-children:not(.expanded-card)::before {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: 180px; /* Fixed width for standardized stack */
+            height: 100%;
+            background: var(--h-card-bg);
+            border: 1px solid var(--h-card-border);
+            border-radius: 20px;
+            z-index: -2;
+            box-shadow: var(--h-shadow);
+            opacity: 0.4;
+            transform: scale(0.92);
+        }
+
         .tree ul.vertical-stack li {
             padding: 20px 0 0 0;
             width: auto;
@@ -226,40 +274,43 @@
         .node-card {
             background: var(--h-card-bg);
             border: 1px solid var(--h-card-border);
-            padding: 12px 24px;
-            border-radius: 14px;
+            padding: 20px 16px;
+            border-radius: 20px;
             display: inline-flex;
             flex-direction: column;
             align-items: center;
-            min-width: 160px;
-            max-width: 280px;
+            justify-content: center;
+            width: 220px; /* Fixed width */
+            min-height: 120px; /* Fixed minimum height */
             box-shadow: var(--h-shadow);
             position: relative;
             z-index: 10;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .node-card:hover {
             border-color: var(--h-line);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         .role-badge {
-            font-size: 8px;
+            font-size: 10px;
             font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .role-gm { background: #d97706; color: #fff; }
-        .role-manager { background: #059669; color: #fff; }
-        .role-area { background: #2563eb; color: #fff; }
-        .role-coordinator { background: #7c3aed; color: #fff; }
-        .role-specialist { background: #4f46e5; color: #fff; }
-        .role-admin { background: #475569; color: #fff; }
+        .role-gm { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .role-manager { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .role-area { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .role-coordinator { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; }
+        .role-specialist { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+        .role-admin { background: linear-gradient(135deg, #64748b, #475569); color: #fff; }
         .role-salesman { 
             background: var(--h-bg); 
             color: var(--h-text-muted); 
@@ -276,16 +327,62 @@
 
         .salesman-count {
             font-size: 11px;
-            color: var(--h-line);
-            margin-top: 6px;
+            color: #fff;
+            margin-top: 8px;
             font-weight: 800;
-            background: rgba(99, 102, 241, 0.08);
-            padding: 2px 8px;
-            border-radius: 5px;
+            background: var(--h-line);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .branch.expanded {
+            display: flex !important;
+            opacity: 1 !important;
+            scale: 1 !important;
+            padding-top: 40px;
+        }
+
+        .branch.vertical-stack.expanded {
+            flex-direction: column !important;
+            padding-top: 20px;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Adjust lines for collapsed children */
+        .node-card.has-children-collapsed::after {
+            display: none !important;
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: var(--h-bg); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--h-card-border); border-radius: 4px; }
     </style>
+
+    <script>
+        function toggleBranch(card) {
+            const li = card.closest('li');
+            const branch = li.querySelector(':scope > .branch-container');
+            const chevron = card.querySelector('.chevron-icon');
+
+            if (branch) {
+                const isHidden = branch.style.display === 'none';
+                
+                if (isHidden) {
+                    branch.style.display = 'flex';
+                    card.classList.add('expanded-card');
+                    if (chevron) chevron.classList.add('rotated');
+                } else {
+                    branch.style.display = 'none';
+                    card.classList.remove('expanded-card');
+                    if (chevron) chevron.classList.remove('rotated');
+                }
+            }
+        }
+    </script>
 </x-app-layout>

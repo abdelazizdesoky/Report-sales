@@ -47,7 +47,8 @@
 @endphp
 
 <li>
-    <div class="node-card">
+    <div class="node-card {{ ($subCount > 0 || $salesCount > 0) ? 'cursor-pointer has-children' : '' }}" 
+         @if($subCount > 0 || $salesCount > 0) onclick="event.stopPropagation(); toggleBranch(this)" @endif>
         <span class="role-badge {{ $roleClass }}">{{ $roleLabel }}</span>
         <span class="name-label">{{ $user->name }}</span>
         
@@ -56,16 +57,19 @@
         @endif
 
         @if($subCount > 0 || $salesCount > 0)
-            <span class="salesman-count">
+            <span class="expand-hint salesman-count flex items-center gap-1">
                 @if($subCount > 0) {{ $subCount }} م @endif
                 @if($subCount > 0 && $salesCount > 0) | @endif
                 @if($salesCount > 0) {{ $salesCount }} ن @endif
+                <svg class="w-2.5 h-2.5 transform transition-transform duration-300 chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
+                </svg>
             </span>
         @endif
     </div>
 
     @if($subordinates->isNotEmpty() || $showSalesData)
-        <ul class="{{ $useVerticalStack ? 'vertical-stack' : '' }}">
+        <ul class="branch-container {{ $useVerticalStack ? 'vertical-stack' : '' }}" style="display: none;">
             {{-- Recursively render all subordinates --}}
             @foreach($subordinates as $subordinate)
                 @include('reports.hierarchy.node', ['user' => $subordinate])
