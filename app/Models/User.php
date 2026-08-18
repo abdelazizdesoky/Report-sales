@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\SalesHierarchyService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,6 +26,8 @@ class User extends Authenticatable
         'password',
         'salesman_name',
         'region',
+        'hierarchy_level',
+        'hierarchy_value',
         'supervisor_id',
         'is_enabled',
     ];
@@ -78,42 +81,22 @@ class User extends Authenticatable
     }
 
     /**
-     * Get list of salesman names this user is allowed to see.
-     * Includes their own salesman name and all names they manage.
+     * Whether this user is bound to a node of the SQL Server sales hierarchy.
      */
-    public function getManagedSalesmenNames(): array
+    public function hasHierarchyScope(): bool
     {
-        // Admin, General Manager and Coordinator see all, handled by skipping the filter in ReportService
-        if ($this->hasRole('Admin') || $this->hasRole('General Manager') || $this->hasRole('Coordinator')) {
-            return [];
-        }
-
-        $names = [];
-
-        // If Manager, Area Manager or Supervisor, get names from all subordinates recursively
-        if ($this->hasRole('Manager') || $this->hasRole('Area Manager') || $this->hasRole('Supervisor')) {
-            foreach ($this->subordinates()->where('is_enabled', true)->get() as $subordinate) {
-                $names = array_merge($names, $subordinate->getManagedSalesmenNames());
-            }
-        }
-
-        // Add names managed directly by this user (mapping in manager_salesman table)
-        $managedDirectly = $this->managedSalesmen()->whereNotNull('salesman_name')->pluck('salesman_name')->toArray();
-        $names = array_merge($names, $managedDirectly);
-
-        // If the user is also a salesman, include themselves
-        if (!empty($this->salesman_name)) {
-            $names[] = $this->salesman_name;
-        }
-
-        return array_values(array_unique(array_filter($names)));
+        return SalesHierarchyService::isValidLevel($this->hierarchy_level)
+            && !empty($this->hierarchy_value);
     }
 
     /**
-     * Check if user is a manager of any salesmen.
+     * The column in BI_ACTIVE_CUSTOMERS this user is matched on,
+     * or null when they are not bound to the hierarchy.
      */
-    public function isManager(): bool
+    public function hierarchyColumn(): ?string
     {
-        return $this->managedSalesmen()->exists();
+        return $this->hasHierarchyScope()
+            ? SalesHierarchyService::columnFor($this->hierarchy_level)
+            : null;
     }
 }

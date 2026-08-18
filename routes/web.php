@@ -33,14 +33,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/role-permissions', [App\Http\Controllers\RolePermissionController::class, 'update'])->name('role-permissions.update');
 
     // User Management
-    Route::resource('users', App\Http\Controllers\UserController::class);
+    // No show() on the controller: the listing links straight to edit.
+    Route::resource('users', App\Http\Controllers\UserController::class)->except('show');
     Route::patch('/users/{user}/toggle-status', [App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
-    // Salesman Management
+    // Salesman Management (legacy)
+    // Superseded by the SQL Server sales hierarchy (BI_ACTIVE_CUSTOMERS).
+    // Kept registered but unreachable from the UI; delete once the new
+    // hierarchy binding is confirmed in production.
+    /*
     Route::get('/salesmen-sync', [App\Http\Controllers\SalesmanManagementController::class, 'index'])->name('salesmen-sync.index');
     Route::post('/salesmen-sync/sync', [App\Http\Controllers\SalesmanManagementController::class, 'sync'])->name('salesmen-sync.sync');
     Route::post('/salesmen-sync/assign', [App\Http\Controllers\SalesmanManagementController::class, 'assign'])->name('salesmen-sync.assign');
     Route::delete('/salesmen-sync/unassign/{manager}/{salesman}', [App\Http\Controllers\SalesmanManagementController::class, 'unassign'])->name('salesmen-sync.unassign');
+    */
 });
 
 

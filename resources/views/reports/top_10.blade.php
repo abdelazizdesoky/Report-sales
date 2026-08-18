@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout wide>
     <x-slot name="header">
         <div class="flex flex-col lg:flex-row-reverse items-start lg:items-center justify-between w-full gap-6">
              <h2 class="font-black text-2xl text-white leading-tight">
@@ -105,8 +105,8 @@
             <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 class="font-bold text-lg text-slate-800 dark:text-white">قائمة العملاء الـ {{ $limit }} الأكثر مديونية</h3>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse text-sm">
+            <div class="overflow-auto custom-scrollbar" style="max-height: calc(100vh - 26rem); min-height: 16rem;">
+                <table class="w-full min-w-[720px] text-right border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                             <th class="px-4 py-3 w-10">#</th>
@@ -174,8 +174,8 @@
             <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 class="font-bold text-lg text-slate-800 dark:text-white">قائمة مدير قطاعين الـ {{ $limit }} الأعلى مديونية (إجمالي العملاء)</h3>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse text-sm">
+            <div class="overflow-auto custom-scrollbar" style="max-height: calc(100vh - 26rem); min-height: 16rem;">
+                <table class="w-full min-w-[720px] text-right border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                             <th class="px-4 py-3 w-10">#</th>

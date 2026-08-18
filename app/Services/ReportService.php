@@ -3,11 +3,75 @@
 namespace App\Services;
 
 use App\Models\Report;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ReportService
 {
+    public function __construct(
+        protected SalesHierarchyService $hierarchy
+    ) {}
+
+    /**
+     * Cache key holding the version stamp of the per-user filter caches.
+     */
+    private const FILTERS_VERSION_KEY = 'aging_report_filters_version';
+
+    /**
+     * Columns the aging report table may be sorted by.
+     */
+    private const SORTABLE_COLUMNS = [
+        'كود_العميل',
+        'اسم_العميل',
+        'تصنيف',
+        'Region_Parent',
+        'SalesMan',
+        'اجمالي_مديونية_العميل',
+        'Not Due',
+        'Over Due',
+    ];
+
+    /**
+     * Columns the region summary may be sorted by.
+     */
+    private const REGION_SORTABLE_COLUMNS = [
+        'Region_Parent',
+        'customers_count',
+        'total_debt',
+        'not_due',
+        'overdue',
+    ];
+
+    /**
+     * Columns the salesman summary may be sorted by.
+     */
+    private const SALESMAN_SORTABLE_COLUMNS = [
+        'SalesMan',
+        'Region_Parent',
+        'customers_count',
+        'total_debt',
+        'not_due',
+        'overdue',
+    ];
+
+    /**
+     * Resolve a user supplied sort column against a whitelist.
+     * Anything unknown falls back to the default column.
+     */
+    private function safeSortColumn(?string $column, array $allowed, string $default): string
+    {
+        return in_array($column, $allowed, true) ? $column : $default;
+    }
+
+    /**
+     * Resolve a user supplied sort direction.
+     */
+    private function safeSortDirection(?string $direction): string
+    {
+        return strtolower((string) $direction) === 'asc' ? 'asc' : 'desc';
+    }
+
     /**
      * Fetch report data from the secondary SQL Server connection.
      *
@@ -25,15 +89,6 @@ class ReportService
     }
 
     /**
-     * Fetch aging report data with filters.
-     *
-     * @param Report $report
-     * @param array $filters
-     * @param int $perPage
-     * @param int $page
-     * @return LengthAwarePaginator
-     */
-    /**
      * Get base query with filters and security applied.
      */
     private function getBaseQuery(Report $report, array $filters = [])
@@ -41,23 +96,9 @@ class ReportService
         $query = DB::connection('sqlsrv')->table($report->source_name)
             ->select('*', 'Region_Parent as Region_Display');
 
-        // Security: Restrict based on user role and hierarchy
-        $user = auth()->user();
-        if ($user && !$user->hasRole('Admin') && !$user->hasRole('General Manager') && !$user->hasRole('Coordinator')) {
-            $managedNames = $user->getManagedSalesmenNames();
-            
-            if (!empty($managedNames)) {
-                // If the user is a manager or a salesman with a linked name, filter by the allowed set
-                $query->whereIn('SalesMan', $managedNames);
-            } else {
-                // If for some reason they have no linked names, they should see nothing (unless they have no salesman_name and no managed salesmen)
-                // However, if they have no linked names and are not admin, we might want to still check user->salesman_name
-                // Actually getManagedSalesmenNames() returns salesman_name as well.
-                // If it's empty, and they aren't admin, they see nothing by default or all if that's the intention?
-                // Usually, if they have no role/salesman, they shouldn't see sensitive data.
-                $query->where('SalesMan', 'NONE_MATCH');
-            }
-        }
+        // Security: restrict to the branch of the sales hierarchy this user owns.
+        // The hierarchy itself lives in SQL Server, see SalesHierarchyService.
+        $this->hierarchy->applyScope($query, auth()->user());
 
         // Apply filters
         if (!empty($filters['search'])) {
@@ -92,6 +133,44 @@ class ReportService
     }
 
     /**
+     * Bump the filter cache so every user rebuilds their options.
+     * Call this whenever salesman assignments or user hierarchy change.
+     */
+    public static function flushFilterOptions(): void
+    {
+        Cache::forever(self::FILTERS_VERSION_KEY, self::filtersVersion() + 1);
+    }
+
+    private static function filtersVersion(): int
+    {
+        return (int) Cache::get(self::FILTERS_VERSION_KEY, 1);
+    }
+
+    /**
+     * Filter dropdown options, restricted to the rows this user may see.
+     * Cached per user so one user's list never leaks to another.
+     */
+    public function getFilterOptions(Report $report): array
+    {
+        $cacheKey = 'aging_report_filters_v' . self::filtersVersion() . '_user_' . (auth()->id() ?? 'guest');
+
+        return Cache::remember($cacheKey, 3600, function () use ($report) {
+            try {
+                return [
+                    'classifications' => $this->getBaseQuery($report)
+                        ->whereNotNull('تصنيف')->distinct()->orderBy('تصنيف')->pluck('تصنيف'),
+                    'regions' => $this->getBaseQuery($report)
+                        ->whereNotNull('Region_Parent')->distinct()->orderBy('Region_Parent')->pluck('Region_Parent'),
+                    'salesmen' => $this->getBaseQuery($report)
+                        ->whereNotNull('SalesMan')->distinct()->orderBy('SalesMan')->pluck('SalesMan'),
+                ];
+            } catch (\Exception $e) {
+                return ['classifications' => [], 'regions' => [], 'salesmen' => []];
+            }
+        });
+    }
+
+    /**
      * Fetch aging report data with filters.
      *
      * @param Report $report
@@ -105,9 +184,9 @@ class ReportService
         $query = $this->getBaseQuery($report, $filters);
 
         // Default sorting
-        $sortColumn = $filters['sort_by'] ?? 'Over Due';
-        $sortDirection = $filters['sort_dir'] ?? 'desc';
-        
+        $sortColumn = $this->safeSortColumn($filters['sort_by'] ?? null, self::SORTABLE_COLUMNS, 'Over Due');
+        $sortDirection = $this->safeSortDirection($filters['sort_dir'] ?? null);
+
         $query->orderBy($sortColumn, $sortDirection);
 
         return $query->paginate(perPage: $perPage, page: $page);
@@ -145,10 +224,10 @@ class ReportService
     public function getDebtSummaries(Report $report, array $filters = []): array
     {
         // Sort parameters for summaries
-        $regionSort = $filters['region_sort_by'] ?? 'total_debt';
-        $regionDir = $filters['region_sort_dir'] ?? 'desc';
-        $salesmanSort = $filters['salesman_sort_by'] ?? 'total_debt';
-        $salesmanDir = $filters['salesman_sort_dir'] ?? 'desc';
+        $regionSort = $this->safeSortColumn($filters['region_sort_by'] ?? null, self::REGION_SORTABLE_COLUMNS, 'total_debt');
+        $regionDir = $this->safeSortDirection($filters['region_sort_dir'] ?? null);
+        $salesmanSort = $this->safeSortColumn($filters['salesman_sort_by'] ?? null, self::SALESMAN_SORTABLE_COLUMNS, 'total_debt');
+        $salesmanDir = $this->safeSortDirection($filters['salesman_sort_dir'] ?? null);
 
         // Summary by Region
         $byRegion = $this->getBaseQuery($report, $filters)
@@ -158,12 +237,12 @@ class ReportService
             ->orderBy($regionSort, $regionDir)
             ->get();
 
-        // Map Area Managers to Regions - filter for enabled managers only
-        $areaManagers = \App\Models\User::role('Area Manager')->where('is_enabled', true)->with('managedSalesmen')->get();
+        // Map each salesman to the manager above him, straight from the
+        // SQL Server hierarchy rather than from local user assignments.
         $salesmanToManagers = [];
-        foreach ($areaManagers as $am) {
-            foreach ($am->managedSalesmen as $ms) {
-                $salesmanToManagers[$ms->salesman_name][] = $am->name;
+        foreach ($this->hierarchy->chain() as $node) {
+            if (!empty($node->SalesMan) && !empty($node->salesManager)) {
+                $salesmanToManagers[$node->SalesMan][] = $node->salesManager;
             }
         }
 
@@ -223,10 +302,10 @@ class ReportService
     public function exportAgingReportToCsv(Report $report, array $filters = [])
     {
         $query = $this->getBaseQuery($report, $filters);
-        
+
         // Apply sorting for export too
-        $sortColumn = $filters['sort_by'] ?? 'Over Due';
-        $sortDirection = $filters['sort_dir'] ?? 'desc';
+        $sortColumn = $this->safeSortColumn($filters['sort_by'] ?? null, self::SORTABLE_COLUMNS, 'Over Due');
+        $sortDirection = $this->safeSortDirection($filters['sort_dir'] ?? null);
         $query->orderBy($sortColumn, $sortDirection);
 
         $headers = [
@@ -239,13 +318,13 @@ class ReportService
 
         return response()->stream(function() use ($query) {
             $handle = fopen('php://output', 'w');
-            
+
             // Add BOM for Excel UTF-8 compatibility
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add Headers
             fputcsv($handle, [
-                'الكود', 'العميل', 'التصنيف', 'المنطقة', 'المندوب', 
+                'الكود', 'العميل', 'التصنيف', 'المنطقة', 'المندوب',
                 'إجمالي المديونية', 'غير مستحق', 'Over Due', 'النسبة %',
                 '1-7 يوم', '8-14 يوم', '15-22 يوم', '23-30 يوم',
                 '31-60 يوم', '61-180 يوم', '+180 يوم'
@@ -280,19 +359,5 @@ class ReportService
 
             fclose($handle);
         }, 200, $headers);
-    }
-
-    /**
-     * Execute a stored procedure if source_name is likely an SP.
-     * 
-     * @param string $spName
-     * @param array $params
-     * @return array
-     */
-    public function executeStoredProcedure(string $spName, array $params = []): array
-    {
-        // Example: DB::connection('sqlsrv')->select('EXEC SP_Name ?, ?', [$val1, $val2]);
-        // This is a placeholder for SP logic if needed.
-        return DB::connection('sqlsrv')->select("EXEC $spName", $params);
     }
 }

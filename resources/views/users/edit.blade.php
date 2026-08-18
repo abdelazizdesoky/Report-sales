@@ -52,13 +52,8 @@
                         <x-input-error :messages="$errors->get('role')" class="mt-2" />
                     </div>
 
-                    <!-- Salesman Name (SQL Server Mapping) -->
-                    <div>
-                        <x-input-label for="salesman_name" value="اسم المندوب في النظام (لربط التقارير)" />
-                        <x-text-input id="salesman_name" name="salesman_name" type="text" class="mt-1" :value="old('salesman_name', $user->salesman_name)" placeholder="مثال: احمد محمد علي" />
-                        <p class="text-xs text-slate-500 mt-1">اتركه فارغاً إذا كان المستخدم مشرفاً أو يرى كل البيانات.</p>
-                        <x-input-error :messages="$errors->get('salesman_name')" class="mt-2" />
-                    </div>
+                    <!-- Sales hierarchy binding (SQL Server) -->
+                    @include('users.partials.hierarchy-fields', ['hierarchyUser' => $user])
 
                     <!-- Supervisor -->
                     <div>

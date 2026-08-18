@@ -9,6 +9,11 @@
         @apply font-sans antialiased;
         direction: rtl;
     }
+
+    /* Keep Alpine-conditional blocks hidden until Alpine boots */
+    [x-cloak] {
+        display: none !important;
+    }
 }
 
 @layer components {

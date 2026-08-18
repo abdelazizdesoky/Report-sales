@@ -23,6 +23,10 @@ class RolePermissionController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()->cannot('manage report visibility')) {
+            abort(403);
+        }
+
         $request->validate([
             'permissions' => 'array',
             'reports' => 'array',

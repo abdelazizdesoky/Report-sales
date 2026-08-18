@@ -111,19 +111,26 @@
                     </div>
                 </nav>
 
+                @php
+                    // Data-heavy pages opt out of the centred reading column
+                    // with <x-app-layout wide> so tables can use the screen.
+                    $containerClasses = $wide ? 'w-full' : 'max-w-7xl mx-auto';
+                    $mainPadding = $wide ? 'p-3 md:p-5' : 'p-4 md:p-8';
+                @endphp
+
                 <!-- Page Heading (Premium Banner) -->
                 @isset($header)
-                    <div class="bg-gradient-to-l from-indigo-600 to-indigo-800 dark:from-indigo-900 dark:to-slate-900 px-8 py-8 border-b border-indigo-500/20 relative overflow-hidden">
+                    <div class="bg-gradient-to-l from-indigo-600 to-indigo-800 dark:from-indigo-900 dark:to-slate-900 px-8 {{ $wide ? 'py-5' : 'py-8' }} border-b border-indigo-500/20 relative overflow-hidden shrink-0">
                         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-                        <div class="relative max-w-7xl mx-auto flex items-center justify-between">
+                        <div class="relative {{ $containerClasses }} flex items-center justify-between">
                             {{ $header }}
                         </div>
                     </div>
                 @endisset
 
                 <!-- Page Content -->
-                <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-slate-50 dark:bg-slate-950/50">
-                    <div class="max-w-7xl mx-auto">
+                <main class="flex-1 min-h-0 overflow-y-auto {{ $mainPadding }} custom-scrollbar bg-slate-50 dark:bg-slate-950/50">
+                    <div class="{{ $containerClasses }}">
                         {{ $slot }}
                     </div>
                 </main>

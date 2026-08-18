@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout wide>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row-reverse items-start md:items-center justify-between w-full gap-4">
              <h2 class="font-black text-2xl text-slate-800 dark:text-white leading-tight">
@@ -47,6 +47,47 @@
         .tab-button.active { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        /* Table viewport: the table scrolls inside itself in both directions
+           so the page chrome (filters, tabs, pagination) always stays put.
+           The height is what is left of the screen under the header and
+           filter card; --table-offset is tightened on small screens. */
+        .table-viewport {
+            --table-offset: 30rem;
+            max-height: calc(100vh - var(--table-offset)); /* fallback; JS measures the real value */
+            min-height: 12rem;
+            overflow: auto;
+            overscroll-behavior: contain;
+        }
+
+        @media (max-width: 1024px) {
+            .table-viewport { --table-offset: 24rem; }
+        }
+
+        @media (max-width: 640px) {
+            .table-viewport { --table-offset: 20rem; }
+        }
+
+        /* Header stays visible while the body scrolls. Needs an opaque
+           background, otherwise rows show through it. */
+        .table-viewport thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8fafc;
+        }
+
+        .dark .table-viewport thead th {
+            background-color: #0f172a;
+        }
+
+        @media print {
+            .table-viewport {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            .table-viewport thead th { position: static; }
+        }
     </style>
 
     <div class="space-y-4">
@@ -187,8 +228,8 @@
 
             <!-- Customers Table Tab -->
             <div id="content-customers" class="tab-content active">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse text-sm">
+                <div class="table-viewport custom-scrollbar">
+                    <table class="w-full min-w-[1100px] text-right border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">
@@ -312,8 +353,8 @@
 
             <!-- Regions Summary Tab -->
             <div id="content-regions" class="tab-content">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse text-sm">
+                <div class="table-viewport custom-scrollbar">
+                    <table class="w-full min-w-[1100px] text-right border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">#</th>
@@ -428,8 +469,8 @@
 
             <!-- Salesmen Summary Tab -->
             <div id="content-salesmen" class="tab-content">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse text-sm">
+                <div class="table-viewport custom-scrollbar">
+                    <table class="w-full min-w-[1100px] text-right border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
                                 <th class="px-4 py-3 font-bold text-slate-500 dark:text-slate-400">#</th>
@@ -559,10 +600,49 @@
             // Remove active class from all tabs
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
+
             // Add active class to selected tab
             document.getElementById('tab-' + tabName).classList.add('active');
             document.getElementById('content-' + tabName).classList.add('active');
+
+            fitTableViewports();
         }
+
+        /**
+         * Give the visible table whatever vertical space is left on screen,
+         * after the cards above it and the pagination below it. The CSS
+         * calc() is only a no-JS fallback; the real height is measured here
+         * so it stays right whatever the filters or stats wrap to.
+         */
+        function fitTableViewports() {
+            const main = document.querySelector('main');
+            if (!main) return;
+
+            const mainRect = main.getBoundingClientRect();
+            const padBottom = parseFloat(getComputedStyle(main).paddingBottom) || 0;
+
+            document.querySelectorAll('.table-viewport').forEach(viewport => {
+                // Tabs that are display:none have no layout to measure.
+                if (viewport.offsetParent === null) return;
+
+                const card = viewport.closest('.glass-card') || viewport.parentElement;
+                const viewportRect = viewport.getBoundingClientRect();
+
+                // Anything rendered after the table inside its own card...
+                let below = card.getBoundingClientRect().bottom - viewportRect.bottom;
+
+                // ...plus the cards after it, e.g. the pagination bar.
+                for (let sib = card.nextElementSibling; sib; sib = sib.nextElementSibling) {
+                    const height = sib.getBoundingClientRect().height;
+                    if (height > 0) below += height + 16; // space-y-4 gutter
+                }
+
+                const available = mainRect.bottom - viewportRect.top - below - padBottom - 8;
+                viewport.style.maxHeight = Math.max(Math.round(available), 200) + 'px';
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', fitTableViewports);
+        window.addEventListener('resize', fitTableViewports);
     </script>
 </x-app-layout>
